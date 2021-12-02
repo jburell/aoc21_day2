@@ -4,13 +4,13 @@ enum Command {
 	Down(u32)
 }
 
-pub fn calc_dive_coords(commands: Vec<(String, u32)>) -> Result<u32, String> {
-	let cmd: Vec<Command> = 
-		commands.iter()
-		.map(to_command)
-		.collect::<Result<Vec<Command>, String>>()?;
+type UnvalidatedCommands = Vec<(String, u32)>;
+type Commands = Vec<Command>;
+
+pub fn calc_dive_coords(commands: UnvalidatedCommands) -> Result<u32, String> {
 	let (h, v) = 
-		cmd.iter()
+		validate_commands(commands)?
+		.iter()
 		.fold((0, 0), |(horiz, vert), cmd| {
 			match cmd {
 				Command::Forward(x) => (horiz + x, vert),
@@ -21,6 +21,26 @@ pub fn calc_dive_coords(commands: Vec<(String, u32)>) -> Result<u32, String> {
 	Ok(h * v)
 }
 
+pub fn calc_dive_coords_with_aim(commands: UnvalidatedCommands) -> Result<u32, String> {
+	let (h, v, _) = 
+	validate_commands(commands)?
+	.iter()
+	.fold((0, 0, 0), |(horiz, vert, aim), cmd| {
+		match cmd {
+			Command::Forward(x) => (horiz + x, vert + aim * x, aim),
+			Command::Up(y) => (horiz, vert, aim - y),
+			Command::Down(y) => (horiz, vert, aim + y),
+		}
+	});
+	Ok(h * v)
+}
+
+fn validate_commands(commands: UnvalidatedCommands) -> Result<Commands, String> {
+	commands.iter()
+	.map(to_command)
+	.collect::<Result<Commands, String>>()
+}
+
 fn to_command(cmd: &(String, u32)) -> Result<Command, String> {
 	match (cmd.0.as_str(), cmd.1) {
 		("forward", x) => Ok(Command::Forward(x)),
@@ -29,4 +49,3 @@ fn to_command(cmd: &(String, u32)) -> Result<Command, String> {
 		_ => Err(format!("Illegal command {:?}", cmd))
 	}
 }
-

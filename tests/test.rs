@@ -26,3 +26,16 @@ fn part_1() {
 		assert_eq!(true, result.is_ok());
 		assert_eq!(1648020, result.unwrap());
 }
+
+#[test]
+fn part_2() {
+		// Arrange
+		let commands = get_data("input_part1.txt");
+
+		// Act
+		let result = calc_dive_coords_with_aim(commands);
+
+		// Assert
+		assert_eq!(true, result.is_ok());
+		assert_eq!(1759818555, result.unwrap());
+}
